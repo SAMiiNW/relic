@@ -1,0 +1,108 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: #0c1014;
+  /* faint guilloche micro-grid on the security stock */
+  background-image:
+    radial-gradient(circle at 50% 50%, rgba(159, 231, 214, 0.04) 0, transparent 60%),
+    repeating-linear-gradient(115deg, rgba(159, 231, 214, 0.025) 0 1px, transparent 1px 9px),
+    repeating-linear-gradient(65deg, rgba(229, 143, 199, 0.02) 0 1px, transparent 1px 11px);
+}
+
+@layer base {
+  ::selection {
+    background: #9fe7d6;
+    color: #0c1014;
+  }
+}
+
+@layer utilities {
+  .microlabel {
+    text-transform: uppercase;
+    letter-spacing: 0.34em;
+    font-size: 0.62rem;
+  }
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+  .focus-ring:focus-visible {
+    outline: 2px solid #9fe7d6;
+    outline-offset: 2px;
+  }
+  /* iridescent foil text that drifts teal to magenta */
+  .foil-text {
+    background-image: linear-gradient(
+      100deg,
+      #9fe7d6 0%,
+      #5fd0c0 22%,
+      #d9c38a 44%,
+      #e58fc7 66%,
+      #9fe7d6 100%
+    );
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: sheen 7s linear infinite;
+  }
+  /* microprint border: a hairline ruled frame */
+  .engraved {
+    position: relative;
+    border: 1px solid rgba(159, 231, 214, 0.22);
+    box-shadow:
+      inset 0 0 0 1px rgba(159, 231, 214, 0.05),
+      inset 0 0 0 4px rgba(12, 16, 20, 0.6),
+      inset 0 0 0 5px rgba(159, 231, 214, 0.1);
+  }
+  /* microprint repeating caption used as a decorative rule */
+  .microprint {
+    font-family: var(--font-space-mono), monospace;
+    font-size: 6px;
+    letter-spacing: 0.18em;
+    line-height: 1;
+    text-transform: uppercase;
+    color: rgba(159, 231, 214, 0.28);
+    white-space: nowrap;
+    overflow: hidden;
+    user-select: none;
+  }
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: #0c1014;
+}
+::-webkit-scrollbar-thumb {
+  background: #22303a;
+  border: 2px solid #0c1014;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #9fe7d6;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+  .foil-text {
+    animation: none !important;
+  }
+}

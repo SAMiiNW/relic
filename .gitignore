@@ -1,0 +1,10 @@
+node_modules/
+.next/
+out/
+.env
+__pycache__/
+*.pyc
+.gltest_cache/
+artifacts/
+.pytest_cache/
+.DS_Store
