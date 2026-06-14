@@ -2,12 +2,13 @@
 
 import { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
-import { ScrollText, Library, Stamp } from 'lucide-react';
-import { Header } from '@/components/Header';
-import { Hero } from '@/components/Hero';
-import { HowItWorks } from '@/components/HowItWorks';
-import { Footer } from '@/components/Footer';
-import { CertificateCard } from '@/components/CertificateCard';
+import { Masthead } from '@/components/Masthead';
+import { RegisterRow } from '@/components/RegisterRow';
+import { RegisterClauses } from '@/components/RegisterClauses';
+import { SpecMargin } from '@/components/SpecMargin';
+import { Colophon } from '@/components/Colophon';
+import { LedgerEntry } from '@/components/LedgerEntry';
+import { GuillocheCanvas } from '@/components/GuillocheCanvas';
 import { Skeleton, EmptyState, ErrorState } from '@/components/States';
 import { SubmitModal, type ModalMode } from '@/components/SubmitModal';
 import { ToastProvider } from '@/components/Toast';
@@ -19,7 +20,7 @@ import type { Artifact } from '@/lib/contract';
 
 type Filter = 'ALL' | 'REGISTERED' | 'GENUINE' | 'DOUBTFUL' | 'FORGERY';
 
-function Catalog() {
+function Ledger() {
   const wallet = useWallet();
   const data = useContractData();
   const [modalOpen, setModalOpen] = useState(false);
@@ -48,99 +49,120 @@ function Catalog() {
     return list.filter((a) => a.status === 'CERTIFIED' && a.ruling === filter);
   }, [data.artifacts, filter]);
 
-  const filters: { key: Filter; label: string }[] = [
-    { key: 'ALL', label: `All ${data.derived.total}` },
-    { key: 'REGISTERED', label: `Pending ${data.derived.registered}` },
-    { key: 'GENUINE', label: `Genuine ${data.derived.genuine}` },
-    { key: 'DOUBTFUL', label: `Doubtful ${data.derived.doubtful}` },
-    { key: 'FORGERY', label: `Forgery ${data.derived.forgery}` },
+  const filters: { key: Filter; label: string; count: number }[] = [
+    { key: 'ALL', label: 'All', count: data.derived.total },
+    { key: 'REGISTERED', label: 'Pending', count: data.derived.registered },
+    { key: 'GENUINE', label: 'Genuine', count: data.derived.genuine },
+    { key: 'DOUBTFUL', label: 'Doubtful', count: data.derived.doubtful },
+    { key: 'FORGERY', label: 'Forgery', count: data.derived.forgery },
   ];
 
   return (
-    <>
-      <Header wallet={wallet} onRegister={openRegister} />
-      <main>
-        <Hero onRegister={openRegister} stats={data.derived} />
-        <HowItWorks />
+    <div className="relative min-h-screen overflow-hidden">
+      {/* faint guilloche behind the whole document */}
+      <div className="pointer-events-none fixed inset-0 opacity-[0.45]">
+        <GuillocheCanvas />
+      </div>
+      <div className="pointer-events-none fixed inset-0 bg-gradient-to-b from-stock/70 via-stock/35 to-stock" />
 
-        {/* THE REGISTER */}
-        <section id="register" className="border-t border-foil/15 py-24">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6">
-            <Microprint text="ARCHIVAL REGISTER OF CERTIFIED RELICS" />
-            <div className="mt-10 flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
-              <div>
-                <span className="microlabel flex items-center gap-2 text-foil">
-                  <Library size={14} /> The register
-                </span>
-                <h2 className="mt-3 font-display text-5xl font-700 leading-[0.95] tracking-tight text-parchment sm:text-6xl">
-                  Every relic on file
+      <div className="relative">
+        {/* FULL-WIDTH engraved masthead band with thin record sub-band */}
+        <Masthead wallet={wallet} stats={data.derived} />
+
+        {/* the body: a single narrow centered ledger column, with a slim right
+            spec margin on wide screens. Side rails carry vertical microprint. */}
+        <div className="mx-auto flex w-full max-w-[1080px] justify-center gap-6 px-3 py-10 sm:px-5 sm:py-14 lg:gap-10">
+          <div className="hidden w-4 shrink-0 self-stretch border-x border-foil/10 sm:block">
+            <Microprint text="RELIC PROVENANCE BUREAU" vertical repeat={30} />
+          </div>
+
+          <main className="min-w-0 flex-1" style={{ maxWidth: 720 }}>
+            {/* intro entry: the register's opening note */}
+            <section className="engraved bg-stock-900/55 px-5 py-6 sm:px-7 sm:py-7">
+              <span className="microlabel text-foil">Entry, opening note</span>
+              <p className="mt-2.5 font-body text-[15px] leading-relaxed text-muted">
+                This is the public register of the Relic Provenance Bureau. Each line below is one
+                artifact on file. Anyone may submit the chain of ownership, documentation, and
+                markings for a plate; an injection-resistant authenticator weighs only what the
+                evidence supports and rules genuine, doubtful, or forgery with an authenticity
+                score. Every validator re-runs the ruling before it is struck into a tamper-evident
+                certificate.
+              </p>
+            </section>
+
+            {/* ruled call-to-action entry within the column flow */}
+            <div className="mt-7">
+              <RegisterRow onRegister={openRegister} />
+            </div>
+
+            {/* the issuance protocol as ruled clauses */}
+            <div className="mt-12">
+              <RegisterClauses />
+            </div>
+
+            {/* THE REGISTER, stacked vertically one plate per row */}
+            <section id="register" className="mt-14">
+              <Microprint text="ARCHIVAL REGISTER OF CERTIFIED RELICS" />
+
+              <div className="mt-7 flex items-baseline justify-between gap-3 border-b border-foil/15 pb-2.5">
+                <h2 className="font-display text-3xl font-700 leading-none tracking-tight text-parchment sm:text-4xl">
+                  The register
                 </h2>
+                <span className="font-mono text-[11px] uppercase tracking-widest text-faint">
+                  {filtered.length} of {data.derived.total} plates
+                </span>
               </div>
-              <div className="flex flex-wrap gap-2">
-                {filters.map((f) => (
-                  <button
-                    key={f.key}
-                    type="button"
-                    onClick={() => setFilter(f.key)}
-                    className={`focus-ring border px-3 py-2 font-mono text-[11px] uppercase tracking-wider transition-colors ${
-                      filter === f.key
-                        ? 'border-foil bg-foil/15 text-foil'
-                        : 'border-foil/20 text-muted hover:border-foil/50'
-                    }`}
-                  >
-                    {f.label}
-                  </button>
+
+              {/* inline engraved index line of filters, not floated pills */}
+              <div className="mt-3 flex flex-wrap items-center gap-x-1 gap-y-2 font-mono text-[11px] uppercase tracking-widest">
+                <span className="mr-1 text-faint">Index</span>
+                {filters.map((f, i) => (
+                  <span key={f.key} className="flex items-center">
+                    {i > 0 && <span className="px-2 text-foil/30">|</span>}
+                    <button
+                      type="button"
+                      onClick={() => setFilter(f.key)}
+                      className={`focus-ring transition-colors ${
+                        filter === f.key ? 'text-foil' : 'text-muted hover:text-parchment'
+                      }`}
+                    >
+                      {f.label}
+                      <span className="ml-1.5 text-faint">{f.count}</span>
+                    </button>
+                  </span>
                 ))}
               </div>
-            </div>
 
-            <div className="mt-12">
-              {data.loading ? (
-                <Skeleton />
-              ) : data.error ? (
-                <ErrorState message={data.error} onRetry={() => data.refresh()} />
-              ) : data.artifacts.length === 0 ? (
-                <EmptyState onRegister={openRegister} />
-              ) : filtered.length === 0 ? (
-                <div className="engraved bg-stock-800/60 px-6 py-14 text-center font-body text-muted">
-                  No relics match this filter yet.
-                </div>
-              ) : (
-                <motion.div layout className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                  {filtered.map((a) => (
-                    <CertificateCard key={a.id} artifact={a} onAuthenticate={openAuthenticate} />
-                  ))}
-                </motion.div>
-              )}
-            </div>
-
-            {/* CTA banner */}
-            <div className="engraved mt-16 flex flex-col items-center justify-between gap-6 bg-foil/5 p-8 sm:flex-row">
-              <div className="flex items-start gap-4">
-                <Stamp size={28} className="mt-1 shrink-0 text-foil" />
-                <div>
-                  <h3 className="font-display text-3xl font-700 tracking-tight text-parchment">
-                    Hold something with a story?
-                  </h3>
-                  <p className="mt-2 font-body text-muted">
-                    Register the artifact, submit its provenance, and let the authenticator strike a
-                    certificate the chain will keep forever.
-                  </p>
-                </div>
+              <div className="mt-7">
+                {data.loading ? (
+                  <Skeleton />
+                ) : data.error ? (
+                  <ErrorState message={data.error} onRetry={() => data.refresh()} />
+                ) : data.artifacts.length === 0 ? (
+                  <EmptyState onRegister={openRegister} />
+                ) : filtered.length === 0 ? (
+                  <div className="engraved bg-stock-800/60 px-6 py-14 text-center font-body text-muted">
+                    No relics match this filter yet.
+                  </div>
+                ) : (
+                  <motion.div layout className="flex flex-col gap-5">
+                    {filtered.map((a) => (
+                      <LedgerEntry key={a.id} artifact={a} onAuthenticate={openAuthenticate} />
+                    ))}
+                  </motion.div>
+                )}
               </div>
-              <button
-                type="button"
-                onClick={openRegister}
-                className="focus-ring flex shrink-0 items-center gap-2 border border-foil bg-foil/15 px-7 py-4 font-mono text-xs font-700 uppercase tracking-widest text-foil transition-transform hover:-translate-y-0.5"
-              >
-                <ScrollText size={18} /> Register a relic
-              </button>
-            </div>
-          </div>
-        </section>
-      </main>
+            </section>
 
-      <Footer />
+            <div className="mt-16">
+              <Colophon />
+            </div>
+          </main>
+
+          {/* slim right spec margin with plate counts */}
+          <SpecMargin stats={data.derived} />
+        </div>
+      </div>
 
       <SubmitModal
         open={modalOpen}
@@ -153,14 +175,14 @@ function Catalog() {
         txApi={txApi}
         setTxInFlight={data.setTxInFlight}
       />
-    </>
+    </div>
   );
 }
 
 export default function Page() {
   return (
     <ToastProvider>
-      <Catalog />
+      <Ledger />
     </ToastProvider>
   );
 }

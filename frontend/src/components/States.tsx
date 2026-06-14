@@ -6,18 +6,23 @@ import { Seal } from './Seal';
 
 export function Skeleton() {
   return (
-    <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+    <div className="flex flex-col gap-5">
       {Array.from({ length: 3 }).map((_, i) => (
-        <div key={i} className="engraved bg-stock-800/70 p-6">
-          <div className="flex justify-between border-b border-foil/10 pb-4">
-            <div className="h-8 w-24 animate-pulse bg-foil/10" />
-            <div className="h-10 w-10 animate-pulse rounded-full bg-foil/10" />
+        <div key={i} className="engraved grid grid-cols-[auto_1fr] gap-5 bg-stock-800/70 p-6 sm:gap-7">
+          <div className="flex w-16 flex-col items-center gap-3 border-r border-foil/10 pr-5 sm:w-20">
+            <div className="h-12 w-12 animate-pulse rounded-full bg-foil/10" />
+            <div className="h-3 w-12 animate-pulse bg-foil/10" />
           </div>
-          <div className="mt-5 h-7 w-3/4 animate-pulse bg-foil/10" />
-          <div className="mt-4 space-y-2">
-            <div className="h-3 w-full animate-pulse bg-foil/10" />
-            <div className="h-3 w-5/6 animate-pulse bg-foil/10" />
-            <div className="h-3 w-2/3 animate-pulse bg-foil/10" />
+          <div>
+            <div className="flex justify-between gap-4">
+              <div className="h-8 w-2/3 animate-pulse bg-foil/10" />
+              <div className="h-7 w-24 animate-pulse bg-foil/10" />
+            </div>
+            <div className="mt-4 space-y-2">
+              <div className="h-3 w-full animate-pulse bg-foil/10" />
+              <div className="h-3 w-5/6 animate-pulse bg-foil/10" />
+              <div className="h-3 w-2/3 animate-pulse bg-foil/10" />
+            </div>
           </div>
         </div>
       ))}
