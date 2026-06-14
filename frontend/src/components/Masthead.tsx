@@ -72,12 +72,12 @@ export function Masthead({ wallet, stats }: Props) {
         <div className="mx-auto flex max-w-[1180px] flex-col gap-y-2 px-4 py-2.5 font-mono text-[11px] text-muted sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-7 sm:px-8">
           <span className="flex items-center gap-2">
             <span className={`h-1.5 w-1.5 rounded-full ${live ? 'bg-foil' : 'bg-foil/60'}`} />
-            <span className="text-faint">Network of record</span>
+            <span className="text-faint">Registry held on</span>
             <span className="text-parchment">Bradbury Testnet</span>
           </span>
           <span className="hidden h-3 w-px bg-foil/20 sm:block" />
           <span className="flex items-center gap-2">
-            <span className="text-faint">Contract</span>
+            <span className="text-faint">Bureau seal</span>
             <a
               href={`${EXPLORER}/address/${CONTRACT_ADDRESS}`}
               target="_blank"
@@ -95,7 +95,7 @@ export function Masthead({ wallet, stats }: Props) {
             rel="noopener noreferrer"
             className="focus-ring text-foil hover:underline"
           >
-            Claim test GEN
+            Draw filing fees
           </a>
           <span className="hidden h-3 w-px bg-foil/20 sm:block" />
           <a
@@ -104,7 +104,7 @@ export function Masthead({ wallet, stats }: Props) {
             rel="noopener noreferrer"
             className="focus-ring hover:text-parchment"
           >
-            Explorer
+            Inspect on explorer
           </a>
         </div>
       </div>

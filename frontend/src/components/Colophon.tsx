@@ -45,7 +45,7 @@ export function Colophon() {
           rel="noopener noreferrer"
           className="flex items-center gap-1 hover:text-foil"
         >
-          Bradbury faucet <ExternalLink size={12} />
+          Draw filing fees <ExternalLink size={12} />
         </a>
         <span className="hidden h-1 w-1 rounded-full bg-foil/40 sm:block" />
         <a
@@ -59,8 +59,9 @@ export function Colophon() {
       </div>
 
       <p className="max-w-md font-mono text-[11px] leading-relaxed text-faint">
-        Built on GenLayer Bradbury Testnet. A certificate is an AI ruling under validator consensus,
-        not a professional appraisal. No deposit, no custody, no backend.
+        This bureau is an experiment on the GenLayer Bradbury testnet. A certificate records the
+        consensus of independent validators, not the opinion of a licensed appraiser, and confers
+        no warranty of title or value. Filing is free; you hold your own keys throughout.
       </p>
     </footer>
   );
