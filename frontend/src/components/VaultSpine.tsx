@@ -1,10 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import { SlidersHorizontal, X } from 'lucide-react';
+import { Droplet, SlidersHorizontal, X } from 'lucide-react';
 import { Seal } from './Seal';
 import { WalletControl } from './WalletControl';
+import { WaxSeal } from './WaxSeal';
 import { Microprint } from './Microprint';
+import { FAUCET } from '@/lib/contract';
 import type { WalletState } from '@/hooks/useWallet';
 
 export type Filter = 'ALL' | 'REGISTERED' | 'GENUINE' | 'DOUBTFUL' | 'FORGERY';
@@ -22,6 +24,10 @@ interface Props {
   active: Filter;
   onSelect: (f: Filter) => void;
   online: boolean;
+  /** sealed certificate count, drives the wax-seal press */
+  certified: number;
+  /** total artifacts on file, used as the current plate number */
+  total: number;
 }
 
 /** The vault drawers: filters rendered as OS drawer rows with a lit tick. */
@@ -96,7 +102,7 @@ function StatusLine({ online }: { online: boolean }) {
  * module, the VAULT DRAWERS (filters), and a microprint foot. Never a
  * horizontal bar. Collapses to a docked foot control + lift sheet when narrow.
  */
-export function VaultSpine({ wallet, filters, active, onSelect, online }: Props) {
+export function VaultSpine({ wallet, filters, active, onSelect, online, certified, total }: Props) {
   const [open, setOpen] = useState(false);
   const activeLabel = filters.find((f) => f.key === active)?.label ?? 'All';
 
@@ -117,17 +123,18 @@ export function VaultSpine({ wallet, filters, active, onSelect, online }: Props)
             <span className="microlabel mt-1 block text-faint">Vault terminal</span>
           </div>
         </div>
-        <div className="mt-4 flex items-center justify-between border-y border-foil/10 py-2.5">
-          <StatusLine online={online} />
-          <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-faint">v1.0</span>
+
+        {/* keyholder: the first interactive control, at the head of the spine */}
+        <div className="mt-5">
+          <span className="microlabel text-foil">Keyholder</span>
+          <div className="mt-2.5">
+            <WalletControl wallet={wallet} block />
+          </div>
         </div>
 
-        {/* keyholder */}
-        <div className="mt-5">
-          <span className="microlabel text-faint">Keyholder</span>
-          <div className="mt-2.5">
-            <WalletControl wallet={wallet} />
-          </div>
+        <div className="mt-5 flex items-center justify-between border-y border-foil/10 py-2.5">
+          <StatusLine online={online} />
+          <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-faint">v1.0</span>
         </div>
 
         {/* vault drawers */}
@@ -138,15 +145,28 @@ export function VaultSpine({ wallet, filters, active, onSelect, online }: Props)
           </div>
         </div>
 
-        {/* foot: microprint spine + series */}
-        <div className="mt-auto flex items-end justify-between gap-2 pt-5">
-          <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-faint">
-            Series
-            <br />
-            MMXXVI
-          </p>
-          <div className="h-24 overflow-hidden">
-            <Microprint text="RELIC VAULT AUTHENTICATION TERMINAL" vertical repeat={18} />
+        {/* foot: bureau wax stamp, filing-fee tap, microprint spine */}
+        <div className="mt-auto pt-5">
+          <div className="border-t border-foil/10 pt-4">
+            <WaxSeal certified={certified} plateNo={total} />
+          </div>
+          <a
+            href={FAUCET}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="focus-ring mt-4 flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.18em] text-foil transition-colors hover:text-parchment"
+          >
+            <Droplet size={13} /> Draw filing fees
+          </a>
+          <div className="mt-4 flex items-end justify-between gap-2">
+            <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-faint">
+              Series
+              <br />
+              MMXXVI
+            </p>
+            <div className="h-20 overflow-hidden">
+              <Microprint text="RELIC VAULT AUTHENTICATION TERMINAL" vertical repeat={16} />
+            </div>
           </div>
         </div>
       </aside>

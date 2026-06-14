@@ -1,10 +1,13 @@
 'use client';
 
 import { useMemo } from 'react';
+import { Compass, BookText } from 'lucide-react';
 import type { Artifact } from '@/lib/contract';
+import { CONTRACT_ADDRESS, EXPLORER } from '@/lib/contract';
 import { Capsule, type CapsuleSize } from './Capsule';
 import { AuthCore } from './AuthCore';
 import { IntakePort } from './IntakePort';
+import { EngravedMarker } from './EngravedMarker';
 import { Skeleton, EmptyState, ErrorState } from './States';
 
 interface Derived {
@@ -183,6 +186,13 @@ export function VaultChamber({
           Feed its provenance through the intake port and an injection-resistant authenticator rules
           genuine, doubtful, or forgery under validator consensus.
         </p>
+        <div className="mt-3 border-t border-foil/10 pt-3">
+          <EngravedMarker
+            href={`${EXPLORER}/address/${CONTRACT_ADDRESS}`}
+            label="Inspect on explorer"
+            icon={Compass}
+          />
+        </div>
       </div>
 
       {/* intake port plate, pinned high-left */}
@@ -195,6 +205,14 @@ export function VaultChamber({
         }}
       >
         <IntakePort onRegister={onRegister} />
+      </div>
+
+      {/* docs reference engraved on its own, low on the right margin */}
+      <div
+        className="absolute z-10"
+        style={{ left: '90%', top: '93%', transform: 'translate(-50%, -50%)' }}
+      >
+        <EngravedMarker href="https://docs.genlayer.com" label="GenLayer docs" icon={BookText} />
       </div>
 
       {/* body: capsules, or a state in place */}
@@ -251,6 +269,10 @@ export function VaultChamber({
       </div>
 
       <IntakePort onRegister={onRegister} />
+
+      <div className="flex justify-end">
+        <EngravedMarker href="https://docs.genlayer.com" label="GenLayer docs" icon={BookText} />
+      </div>
 
       {loading ? (
         <Skeleton />

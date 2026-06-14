@@ -67,6 +67,8 @@ function VaultTerminal() {
         active={filter}
         onSelect={setFilter}
         online={online}
+        certified={data.derived.certified}
+        total={data.derived.total}
       />
 
       {/* the vault chamber: the rest of the viewport, offset past the spine */}

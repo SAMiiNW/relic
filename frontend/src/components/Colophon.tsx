@@ -58,11 +58,7 @@ export function Colophon() {
         </a>
       </div>
 
-      <p className="max-w-md font-mono text-[11px] leading-relaxed text-faint">
-        This bureau is an experiment on the GenLayer Bradbury testnet. A certificate records the
-        consensus of independent validators, not the opinion of a licensed appraiser, and confers
-        no warranty of title or value. Filing is free; you hold your own keys throughout.
-      </p>
+      <p className="microlabel text-faint">Free filing, you hold your own keys</p>
     </footer>
   );
 }
