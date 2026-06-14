@@ -44,41 +44,46 @@ function capsuleSize(a: Artifact): CapsuleSize {
   return 'sm';
 }
 
-const SIZE_PX: Record<CapsuleSize, number> = { lg: 320, md: 270, sm: 230 };
-
 /**
- * Suspension coordinates for specimen capsules inside the chamber, expressed
- * as percentages. Deliberately asymmetric with large voids; the core sits
- * off-center at (CX, CY) and every capsule tethers back to it.
+ * A purely decorative guilloche filament backdrop. It carries no controls and
+ * never receives pointer events, so it can never overlap or collide with the
+ * cards in front of it. It only adds the faint security-print signature behind
+ * the top band of the chamber.
  */
-const SLOTS: { left: number; top: number; rot: number }[] = [
-  { left: 22, top: 30, rot: -1.5 },
-  { left: 24, top: 64, rot: 1.5 },
-  { left: 47, top: 79, rot: -1 },
-  { left: 78, top: 70, rot: 1.5 },
-  { left: 86, top: 40, rot: -2 },
-  { left: 70, top: 18, rot: 1 },
-  { left: 45, top: 22, rot: -1 },
-  { left: 88, top: 84, rot: 2 },
-  { left: 20, top: 86, rot: -2 },
-  { left: 62, top: 50, rot: 1.5 },
-];
-
-// authenticator core sits off-center, left-of-middle and high
-const CX = 58;
-const CY = 46;
-
-function slotFor(i: number) {
-  if (i < SLOTS.length) return SLOTS[i];
-  const k = i - SLOTS.length;
-  const angle = k * 2.399963 + 0.9;
-  const r = 30 + (k % 3) * 6;
-  const left = Math.max(18, Math.min(88, CX + Math.cos(angle) * r * 1.2));
-  const top = Math.max(16, Math.min(86, CY + Math.sin(angle) * r * 0.95));
-  const rot = ((k * 37) % 7) - 3;
-  return { left, top, rot };
+function Filaments() {
+  return (
+    <svg
+      className="pointer-events-none absolute inset-0 h-full w-full opacity-50"
+      viewBox="0 0 100 60"
+      preserveAspectRatio="none"
+      aria-hidden="true"
+    >
+      <path d="M0 4 L100 4" stroke="rgba(159,231,214,0.16)" strokeWidth="0.12" fill="none" />
+      <path d="M0 56 L100 56" stroke="rgba(159,231,214,0.16)" strokeWidth="0.12" fill="none" />
+      {Array.from({ length: 13 }).map((_, i) => (
+        <line
+          key={`tick-${i}`}
+          x1={6 + i * 7}
+          y1={1.4}
+          x2={6 + i * 7}
+          y2={3}
+          stroke="rgba(159,231,214,0.22)"
+          strokeWidth="0.1"
+        />
+      ))}
+      <path d="M0.6 2.4 L0.6 0.6 L4 0.6" stroke="rgba(159,231,214,0.4)" strokeWidth="0.16" fill="none" />
+      <path d="M96 0.6 L99.4 0.6 L99.4 2.4" stroke="rgba(159,231,214,0.4)" strokeWidth="0.16" fill="none" />
+    </svg>
+  );
 }
 
+/**
+ * The vault chamber, laid out in normal document flow. A top band carries the
+ * boot note beside the authenticator reactor core, the intake port sits on its
+ * own clear row, and every specimen capsule is a normal cell in a responsive
+ * grid (one, two, then three columns) with real gaps, so nothing overlaps on
+ * any viewport. The bureau reference markers trail below in flow.
+ */
 export function VaultChamber({
   artifacts,
   derived,
@@ -90,190 +95,57 @@ export function VaultChamber({
   onRetry,
 }: Props) {
   const placed = useMemo(
-    () => artifacts.map((a, i) => ({ a, slot: slotFor(i), size: capsuleSize(a) })),
+    () => artifacts.map((a) => ({ a, size: capsuleSize(a) })),
     [artifacts],
   );
 
-  const hasCapsules = !loading && !error && artifacts.length > 0;
-
-  // intake port anchor (matches the absolute plate position below)
-  const INTAKE = { left: 19, top: 16 };
-
-  // ---- WIDE: the suspended chamber (lg and up) ----
-  const chamber = (
-    <div className="relative hidden h-[clamp(860px,90vw,1240px)] w-full lg:block">
-      {/* HUD corner brackets */}
-      <svg
-        className="pointer-events-none absolute inset-0 h-full w-full"
-        viewBox="0 0 100 100"
-        preserveAspectRatio="none"
-        aria-hidden="true"
-      >
-        {/* coordinate ticks along the top edge */}
-        {Array.from({ length: 12 }).map((_, i) => (
-          <line
-            key={`tick-${i}`}
-            x1={6 + i * 8}
-            y1={1.2}
-            x2={6 + i * 8}
-            y2={2.6}
-            stroke="rgba(159,231,214,0.22)"
-            strokeWidth="0.1"
-          />
-        ))}
-        {/* corner brackets */}
-        <path d="M1 5 L1 1 L6 1" stroke="rgba(159,231,214,0.4)" strokeWidth="0.16" fill="none" />
-        <path d="M94 1 L99 1 L99 5" stroke="rgba(159,231,214,0.4)" strokeWidth="0.16" fill="none" />
-        <path d="M1 95 L1 99 L6 99" stroke="rgba(159,231,214,0.4)" strokeWidth="0.16" fill="none" />
-        <path
-          d="M94 99 L99 99 L99 95"
-          stroke="rgba(159,231,214,0.4)"
-          strokeWidth="0.16"
-          fill="none"
-        />
-
-        {/* intake feed line into the core */}
-        <line
-          x1={CX}
-          y1={CY}
-          x2={INTAKE.left}
-          y2={INTAKE.top}
-          stroke="rgba(217,195,138,0.32)"
-          strokeWidth="0.12"
-        />
-
-        {/* specimen filaments radiating to the core */}
-        {hasCapsules &&
-          placed.map(({ a, slot }) => (
-            <g key={`thread-${a.id}`}>
-              <line
-                x1={CX}
-                y1={CY}
-                x2={slot.left}
-                y2={slot.top}
-                stroke="rgba(159,231,214,0.16)"
-                strokeWidth="0.12"
+  return (
+    <div className="flex flex-col gap-8">
+      {/* top band: boot note beside the authenticator reactor core */}
+      <section className="relative">
+        <Filaments />
+        <div className="relative grid gap-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-stretch">
+          <div className="engraved flex flex-col bg-stock-900/70 p-5 sm:p-6">
+            <span className="microlabel text-foil">Boot note</span>
+            <p className="mt-2 font-body text-[14px] leading-relaxed text-muted">
+              The public register of the Relic Provenance Bureau. Each capsule is one artifact on
+              file. Feed its provenance through the intake port and an injection-resistant
+              authenticator rules genuine, doubtful, or forgery under validator consensus.
+            </p>
+            <div className="mt-4 border-t border-foil/10 pt-4">
+              <EngravedMarker
+                href={`${EXPLORER}/address/${CONTRACT_ADDRESS}`}
+                label="Inspect on explorer"
+                icon={Compass}
               />
-              <line
-                x1={CX}
-                y1={CY}
-                x2={slot.left}
-                y2={slot.top}
-                stroke="rgba(159,231,214,0.5)"
-                strokeWidth="0.1"
-                className="thread"
-              />
-            </g>
-          ))}
-      </svg>
-
-      {/* authenticator reactor core */}
-      <div
-        className="absolute z-20"
-        style={{ left: `${CX}%`, top: `${CY}%`, transform: 'translate(-50%, -50%)' }}
-      >
-        <AuthCore total={totalOnFile} certified={derived.certified} genuine={derived.genuine} />
-      </div>
-
-      {/* boot note plate, pinned mid-left */}
-      <div
-        className="engraved absolute z-10 w-[256px] bg-stock-900/75 p-5"
-        style={{ left: '15%', top: '47%', transform: 'translate(-50%, -50%) rotate(-1.5deg)' }}
-      >
-        <span className="microlabel text-foil">Boot note</span>
-        <p className="mt-2 font-body text-[13px] leading-relaxed text-muted">
-          The public register of the Relic Provenance Bureau. Each capsule is one artifact on file.
-          Feed its provenance through the intake port and an injection-resistant authenticator rules
-          genuine, doubtful, or forgery under validator consensus.
-        </p>
-        <div className="mt-3 border-t border-foil/10 pt-3">
-          <EngravedMarker
-            href={`${EXPLORER}/address/${CONTRACT_ADDRESS}`}
-            label="Inspect on explorer"
-            icon={Compass}
-          />
-        </div>
-      </div>
-
-      {/* intake port plate, pinned high-left */}
-      <div
-        className="absolute z-20 w-[256px]"
-        style={{
-          left: `${INTAKE.left}%`,
-          top: `${INTAKE.top}%`,
-          transform: 'translate(-50%, -50%) rotate(-2deg)',
-        }}
-      >
-        <IntakePort onRegister={onRegister} />
-      </div>
-
-      {/* docs reference engraved on its own, low on the right margin */}
-      <div
-        className="absolute z-10"
-        style={{ left: '90%', top: '93%', transform: 'translate(-50%, -50%)' }}
-      >
-        <EngravedMarker href="https://docs.genlayer.com" label="GenLayer docs" icon={BookText} />
-      </div>
-
-      {/* body: capsules, or a state in place */}
-      {loading ? (
-        <div className="absolute left-[30%] top-[68%] w-[min(660px,72%)] -translate-x-1/2">
-          <Skeleton />
-        </div>
-      ) : error ? (
-        <div className="absolute left-[34%] top-[70%] w-[min(600px,72%)] -translate-x-1/2">
-          <ErrorState message={error} onRetry={onRetry} />
-        </div>
-      ) : artifacts.length === 0 ? (
-        <div className="absolute left-[36%] top-[70%] w-[min(620px,72%)] -translate-x-1/2">
-          {totalOnFile === 0 ? <EmptyState onRegister={onRegister} /> : <NoMatch />}
-        </div>
-      ) : (
-        placed.map(({ a, slot, size }) => (
-          <div
-            key={a.id}
-            className="absolute z-10"
-            style={{
-              left: `${slot.left}%`,
-              top: `${slot.top}%`,
-              width: SIZE_PX[size],
-              transform: `translate(-50%, -50%) rotate(${slot.rot}deg)`,
-            }}
-          >
-            <Capsule artifact={a} size={size} onAuthenticate={onAuthenticate} />
+            </div>
           </div>
-        ))
-      )}
-    </div>
-  );
 
-  // ---- NARROW: a readable vertical stack (below lg) ----
-  const stack = (
-    <div className="flex flex-col gap-6 lg:hidden">
-      <section className="engraved bg-stock-900/60 p-5">
-        <span className="microlabel text-foil">Boot note</span>
-        <p className="mt-2 font-body text-[14px] leading-relaxed text-muted">
-          The public register of the Relic Provenance Bureau. Each capsule is one artifact on file.
-          Feed its provenance through the intake port and an injection-resistant authenticator rules
-          genuine, doubtful, or forgery under validator consensus.
-        </p>
+          <div className="engraved flex items-center justify-center bg-stock-900/50 p-5 sm:p-6 lg:px-10">
+            <AuthCore total={totalOnFile} certified={derived.certified} genuine={derived.genuine} />
+          </div>
+        </div>
       </section>
 
-      <div className="flex justify-center py-2">
-        <AuthCore
-          total={totalOnFile}
-          certified={derived.certified}
-          genuine={derived.genuine}
-          compact
-        />
+      {/* intake port: the register-a-relic action on its own clear row */}
+      <section>
+        <IntakePort onRegister={onRegister} />
+      </section>
+
+      {/* heading for the specimen grid */}
+      <div className="flex flex-wrap items-end justify-between gap-3 border-b border-foil/15 pb-3">
+        <div>
+          <span className="microlabel text-foil">Vault wall</span>
+          <h2 className="mt-1 font-display text-2xl font-700 tracking-tight text-parchment sm:text-3xl">
+            Artifacts on file
+          </h2>
+        </div>
+        <span className="tabular font-mono text-[11px] uppercase tracking-[0.2em] text-faint">
+          {artifacts.length} shown / {totalOnFile} on file
+        </span>
       </div>
 
-      <IntakePort onRegister={onRegister} />
-
-      <div className="flex justify-end">
-        <EngravedMarker href="https://docs.genlayer.com" label="GenLayer docs" icon={BookText} />
-      </div>
-
+      {/* the specimens, as a responsive grid of normal cells */}
       {loading ? (
         <Skeleton />
       ) : error ? (
@@ -285,24 +157,22 @@ export function VaultChamber({
           <NoMatch />
         )
       ) : (
-        <div className="flex flex-col gap-5">
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
           {placed.map(({ a, size }) => (
-            <Capsule
-              key={a.id}
-              artifact={a}
-              size={size === 'sm' ? 'sm' : 'md'}
-              onAuthenticate={onAuthenticate}
-            />
+            <Capsule key={a.id} artifact={a} size={size} onAuthenticate={onAuthenticate} />
           ))}
         </div>
       )}
-    </div>
-  );
 
-  return (
-    <>
-      {chamber}
-      {stack}
-    </>
+      {/* bureau reference markers, trailing below in flow */}
+      <div className="flex flex-wrap items-center gap-3 pt-2">
+        <EngravedMarker
+          href={`${EXPLORER}/address/${CONTRACT_ADDRESS}`}
+          label="Inspect on explorer"
+          icon={Compass}
+        />
+        <EngravedMarker href="https://docs.genlayer.com" label="GenLayer docs" icon={BookText} />
+      </div>
+    </div>
   );
 }
